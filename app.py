@@ -12,11 +12,28 @@ def webhook():
     data = request.json
     print("🔥 RECEIVED:", data)
 
-    if data:
-        signal = data.get("signal", "NO SIGNAL")
-        price = data.get("price", "NO PRICE")
+ if data:
+    signal = data.get("signal", "")
+    price = data.get("price", "")
+    sl = data.get("sl", "")
+    tp1 = data.get("tp1", "")
+    tp2 = data.get("tp2", "")
 
-        message = f"{signal} XAUUSD\nPrice: {price}"
+    if signal == "BUY":
+        header = "🟢 BUY NOW"
+    else:
+        header = "🔴 SELL NOW"
+
+    message = (
+        f"XAUUSD {header}\n"
+        f"PRICE {price}\n"
+        f"SL {sl}\n"
+        f"TP1 {tp1}\n"
+        f"TP2 {tp2}"
+    )   
+        
+
+    
 
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
