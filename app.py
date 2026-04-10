@@ -3,26 +3,29 @@ import requests
 
 app = Flask(__name__)
 
-BOT_TOKEN = "bot8755949206:AAG_6J4Vx7YfHv-yg_eA1t_AlIOQKX3hsag"
-CHAT_ID = "-1003787596424"
+TOKEN = "bot8755949206:AAG_6J4Vx7YfHv-yg_eA1t_AlIOQKX3hsag"
+CHAT_ID = "Chat id-1003787596424"
 
-@app.route('/', methods=['POST'])
-def webhook():
-    data = request.json
+@app.route("/", methods=["GET", "POST"])
+def home():
+    print("🔥 REQUEST RECEIVED")
 
-    signal = data.get("signal", "UNKNOWN")
-    price = data.get("price", "N/A")
+    try:
+        data = request.get_data(as_text=True)
+        print("📩 DATA:", data)
 
-    message = f"{signal} XAUUSD\nEntry: {price}"
+        # Send to Telegram
+        url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+        requests.post(url, json={
+            "chat_id": CHAT_ID,
+            "text": f"📡 Alert:\n{data}"
+        })
 
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": CHAT_ID,
-        "text": message
-    }
+        return "OK", 200
 
-    requests.post(url, json=payload)
+    except Exception as e:
+        print("❌ ERROR:", str(e))
+        return "Error", 400
 
-    return "OK"
-
-app.run(host='0.0.0.0', port=10000)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
