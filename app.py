@@ -12,7 +12,7 @@ def webhook():
     data = request.json
     print("🔥 RECEIVED:", data)
 
- if data:
+if data:
     signal = data.get("signal", "")
     price = data.get("price", "")
     sl = data.get("sl", "")
@@ -21,8 +21,10 @@ def webhook():
 
     if signal == "BUY":
         header = "🟢 BUY NOW"
-    else:
+    elif signal == "SELL":
         header = "🔴 SELL NOW"
+    else:
+        header = "⚪ SIGNAL"
 
     message = (
         f"XAUUSD {header}\n"
@@ -30,8 +32,7 @@ def webhook():
         f"SL {sl}\n"
         f"TP1 {tp1}\n"
         f"TP2 {tp2}"
-    )   
-        
+    )
 
     
 
