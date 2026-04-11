@@ -20,19 +20,24 @@ def webhook():
         tp2 = data.get("tp2", "")
 
  
-
-        if signal == "BUY":
+if signal == "BUY":
     header = "🟢 BUY NOW"
+
 elif signal == "SELL":
     header = "🔴 SELL NOW"
+
 elif signal == "TP1 HIT":
     header = "🎯 TP1 HIT"
+
 elif signal == "TP2 HIT":
     header = "🚀 TP2 HIT"
+
 elif signal == "SL HIT":
     header = "❌ SL HIT"
+
 else:
     header = "⚪ SIGNAL"
+        
 
 # 👇 MOVE THIS HERE (IMPORTANT)
 symbol = data.get("symbol", "XAUUSD")
