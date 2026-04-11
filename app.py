@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 BOT_TOKEN = "8755949206:AAG_6J4Vx7YfHv-yg_eA1t_AlIOQKX3hsag"
 CHAT_ID = "-1003787596424"
-
+data = request.get_json(force=True)
 
 @app.route("/", methods=["POST"])
 def webhook():
