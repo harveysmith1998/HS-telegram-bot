@@ -20,46 +20,40 @@ def webhook():
         tp2 = data.get("tp2", "")
 
  
-if signal == "BUY":
-    header = "🟢 BUY NOW"
+        if signal == "BUY":
+            header = "🟢 BUY NOW"
+        elif signal == "SELL":
+            header = "🔴 SELL NOW"
+        elif signal == "TP1 HIT":
+            header = "🎯 TP1 HIT"
+        elif signal == "TP2 HIT":
+            header = "🚀 TP2 HIT"
+        elif signal == "SL HIT":
+            header = "❌ SL HIT"
+        else:
+            header = "⚪ SIGNAL"
 
-elif signal == "SELL":
-    header = "🔴 SELL NOW"
+        # Get symbol dynamically
+        symbol = data.get("symbol", "XAUUSD")
 
-elif signal == "TP1 HIT":
-    header = "🎯 TP1 HIT"
+        # Build message
+        message = (
+            f"{symbol} {header}\n"
+            f"PRICE {price}\n"
+            f"SL {sl}\n"
+            f"TP1 {tp1}\n"
+            f"TP2 {tp2}"
+        )
 
-elif signal == "TP2 HIT":
-    header = "🚀 TP2 HIT"
+        # Send to Telegram
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
-elif signal == "SL HIT":
-    header = "❌ SL HIT"
+        payload = {
+            "chat_id": CHAT_ID,
+            "text": message
+        }
 
-else:
-    header = "⚪ SIGNAL"
-        
+        r = requests.post(url, json=payload)
+        print("📩 TELEGRAM RESPONSE:", r.text)
 
-# 👇 MOVE THIS HERE (IMPORTANT)
-symbol = data.get("symbol", "XAUUSD")
-
-
-message = (
-    f"{symbol} {header}\n"
-    f"PRICE {price}\n"
-    f"SL {sl}\n"
-    f"TP1 {tp1}\n"
-    f"TP2 {tp2}"
-)
-
-url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-
-payload = {
-    "chat_id": CHAT_ID,
-    "text": message
-}
-
-r = requests.post(url, json=payload)
-print("📩 TELEGRAM RESPONSE:", r.text)
-
-return "OK", 200
-
+    return "OK", 200
