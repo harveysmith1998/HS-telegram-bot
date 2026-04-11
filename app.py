@@ -19,20 +19,31 @@ def webhook():
         tp1 = data.get("tp1", "")
         tp2 = data.get("tp2", "")
 
-        if signal == "BUY":
-            header = "🟢 BUY NOW"
-        elif signal == "SELL":
-            header = "🔴 SELL NOW"
-        else:
-            header = "⚪ SIGNAL"
+ 
 
-        message = (
-            f"XAUUSD {header}\n"
-            f"PRICE {price}\n"
-            f"SL {sl}\n"
-            f"TP1 {tp1}\n"
-            f"TP2 {tp2}"
-        )
+        if signal == "BUY":
+    header = "🟢 BUY NOW"
+elif signal == "SELL":
+    header = "🔴 SELL NOW"
+elif signal == "TP1 HIT":
+    header = "🎯 TP1 HIT"
+elif signal == "TP2 HIT":
+    header = "🚀 TP2 HIT"
+elif signal == "SL HIT":
+    header = "❌ SL HIT"
+else:
+    header = "⚪ SIGNAL"
+
+# 👇 MOVE THIS HERE (IMPORTANT)
+symbol = data.get("symbol", "XAUUSD")
+
+message = (
+    f"{symbol} {header}\n"
+    f"PRICE {price}\n"
+    f"SL {sl}\n"
+    f"TP1 {tp1}\n"
+    f"TP2 {tp2}"
+)
 
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
