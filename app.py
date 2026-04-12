@@ -21,7 +21,8 @@ def webhook():
         tp2 = data.get("tp2", "")
         symbol = data.get("symbol", "XAUUSD")
 
-     if signal == "BUY":
+
+if signal == "BUY":
     message = (
         f"📊 <b>{symbol}</b>\n"
         f"🟢 <b>BUY NOW</b>\n\n"
@@ -66,7 +67,7 @@ else:
     message = (
         f"📊 <b>{symbol}</b>\n"
         f"⚪ <b>SIGNAL</b>"
-    )
+    )        
 
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
