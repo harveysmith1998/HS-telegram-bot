@@ -23,11 +23,13 @@ def webhook():
     tp1 = data.get("tp1", "")
     tp2 = data.get("tp2", "")
     symbol = data.get("symbol", "XAUUSD")
+    strategy = data.get("strategy", "HS BOT")
 
     # 🎯 Build message
     if signal == "BUY":
         message = (
             f"📊 <b>{symbol}</b>\n"
+            f"🤖 <b>{strategy}</b>\n\n"
             f"🟢 <b>BUY NOW</b>\n\n"
             f"<b>💰 Price:</b> <code>{price}</code>\n"
             f"<b>🛑 SL:</b> <code>{sl}</code>\n"
@@ -38,6 +40,7 @@ def webhook():
     elif signal == "SELL":
         message = (
             f"📊 <b>{symbol}</b>\n"
+            f"🤖 <b>{strategy}</b>\n\n"
             f"🔴 <b>SELL NOW</b>\n\n"
             f"<b>💰 Price:</b> <code>{price}</code>\n"
             f"<b>🛑 SL:</b> <code>{sl}</code>\n"
@@ -48,6 +51,7 @@ def webhook():
     elif signal == "TP1 HIT":
         message = (
             f"📊 <b>{symbol}</b>\n"
+            f"🤖 <b>{strategy}</b>\n\n"
             f"🎯 <b>TP1 HIT</b>\n\n"
             f"<b>💰 Price:</b> <code>{price}</code>"
         )
@@ -55,6 +59,7 @@ def webhook():
     elif signal == "TP2 HIT":
         message = (
             f"📊 <b>{symbol}</b>\n"
+            f"🤖 <b>{strategy}</b>\n\n"
             f"🚀 <b>TP2 HIT</b>\n\n"
             f"<b>💰 Price:</b> <code>{price}</code>"
         )
@@ -62,6 +67,7 @@ def webhook():
     elif signal == "SL HIT":
         message = (
             f"📊 <b>{symbol}</b>\n"
+            f"🤖 <b>{strategy}</b>\n\n"
             f"❌ <b>STOP LOSS HIT</b>\n\n"
             f"<b>💰 Price:</b> <code>{price}</code>"
         )
@@ -69,6 +75,7 @@ def webhook():
     else:
         message = (
             f"📊 <b>{symbol}</b>\n"
+            f"🤖 <b>{strategy}</b>\n\n"
             f"⚪ <b>SIGNAL</b>\n\n"
             f"<b>💰 Price:</b> <code>{price}</code>"
         )
