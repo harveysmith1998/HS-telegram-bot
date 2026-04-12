@@ -91,7 +91,7 @@ def webhook():
     # 📩 SEND TO TELEGRAM
     # =========================
 
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+    url = f"https://api.telegram.org/bot{8755949206:AAG_6J4Vx7YfHv-yg_eA1t_AlIOQKX3hsag}/sendMessage"
 
     payload = {
         "chat_id": CHAT_ID,
