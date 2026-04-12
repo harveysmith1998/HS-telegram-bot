@@ -5,8 +5,8 @@ import os
 app = Flask(__name__)
 
 # ✅ Correct way to get env variables
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
-CHAT_ID = os.environ.get("CHAT_ID")
+BOT_TOKEN = os.environ.get("8755949206:AAG_6J4Vx7YfHv-yg_eA1t_AlIOQKX3hsag")
+CHAT_ID = os.environ.get("-1003787596424")
 
 @app.route("/", methods=["POST"])
 def webhook():
