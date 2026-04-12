@@ -10,7 +10,7 @@ CHAT_ID = "-1003787596424"
 
 @app.route("/", methods=["POST"])
 def webhook():
-    data = request.get_json(silent=True)
+    data = request.get_json(silent=True) or {}
     print("🔥 RECEIVED:", data)
 
     if data:
@@ -21,33 +21,60 @@ def webhook():
         tp2 = data.get("tp2", "")
         symbol = data.get("symbol", "XAUUSD")
 
-        if signal == "BUY":
-            header = "🟢 BUY NOW"
-        elif signal == "SELL":
-            header = "🔴 SELL NOW"
-        elif signal == "TP1 HIT":
-            header = "🎯 TP1 HIT"
-        elif signal == "TP2 HIT":
-            header = "🚀 TP2 HIT"
-        elif signal == "SL HIT":
-            header = "❌ SL HIT"
-        else:
-            header = "⚪ SIGNAL"
+     if signal == "BUY":
+    message = (
+        f"📊 <b>{symbol}</b>\n"
+        f"🟢 <b>BUY NOW</b>\n\n"
+        f"💰 Price: <code>{price}</code>\n"
+        f"🛑 SL: <code>{sl}</code>\n"
+        f"🎯 TP1: <code>{tp1}</code>\n"
+        f"🚀 TP2: <code>{tp2}</code>"
+    )
 
-        message = (
-            f"{symbol} {header}\n"
-            f"PRICE {price}\n"
-            f"SL {sl}\n"
-            f"TP1 {tp1}\n"
-            f"TP2 {tp2}"
-        )
+elif signal == "SELL":
+    message = (
+        f"📊 <b>{symbol}</b>\n"
+        f"🔴 <b>SELL NOW</b>\n\n"
+        f"💰 Price: <code>{price}</code>\n"
+        f"🛑 SL: <code>{sl}</code>\n"
+        f"🎯 TP1: <code>{tp1}</code>\n"
+        f"🚀 TP2: <code>{tp2}</code>"
+    )
+
+elif signal == "TP1 HIT":
+    message = (
+        f"📊 <b>{symbol}</b>\n"
+        f"🎯 <b>TP1 HIT</b>\n\n"
+        f"💰 Price: <code>{price}</code>"
+    )
+
+elif signal == "TP2 HIT":
+    message = (
+        f"📊 <b>{symbol}</b>\n"
+        f"🚀 <b>TP2 HIT</b>\n\n"
+        f"💰 Price: <code>{price}</code>"
+    )
+
+elif signal == "SL HIT":
+    message = (
+        f"📊 <b>{symbol}</b>\n"
+        f"❌ <b>STOP LOSS HIT</b>\n\n"
+        f"💰 Price: <code>{price}</code>"
+    )
+
+else:
+    message = (
+        f"📊 <b>{symbol}</b>\n"
+        f"⚪ <b>SIGNAL</b>"
+    )
 
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
-        payload = {
-            "chat_id": CHAT_ID,
-            "text": message
-        }
+       payload = {
+    "chat_id": CHAT_ID,
+    "text": message,
+    "parse_mode": "HTML"
+}
 
         r = requests.post(url, json=payload)
         print("📩 TELEGRAM RESPONSE:", r.text)
