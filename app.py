@@ -10,7 +10,7 @@ CHAT_ID = "-1003787596424"
 
 @app.route("/", methods=["POST"])
 def webhook():
-    data = request.get_json(force=True)
+    data = request.get_json(silent=True)
     print("🔥 RECEIVED:", data)
 
     if data:
