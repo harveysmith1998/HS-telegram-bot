@@ -4,20 +4,20 @@ import os
 
 app = Flask(__name__)
 
-# 🔐 Use environment variables (recommended)
-BOT_TOKEN = os.environ.get("8755949206:AAG_6J4Vx7YfHv-yg_eA1t_AlIOQKX3hsag")
-CHAT_ID = os.environ.get("-1003787596424")
+# ✅ Correct way to get env variables
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+CHAT_ID = os.environ.get("CHAT_ID")
 
 @app.route("/", methods=["POST"])
 def webhook():
     data = request.get_json(silent=True) or {}
-    print("🔥 RECEIVED:", data)
+    print("📩 RECEIVED:", data)
 
     if not data:
         return "No data", 400
 
-    # 📊 Extract values safely
-    signal = data.get("signal", "")
+    # ✅ Clean + extract values
+    signal = str(data.get("signal", "")).strip().upper()
     price = data.get("price", "")
     sl = data.get("sl", "")
     tp1 = data.get("tp1", "")
@@ -25,62 +25,72 @@ def webhook():
     symbol = data.get("symbol", "XAUUSD")
     strategy = data.get("strategy", "HS BOT")
 
-    # 🎯 Build message
-    if signal == "BUY":
+    print("📊 SIGNAL:", signal)
+
+    # =========================
+    # 🧠 BUILD MESSAGE
+    # =========================
+
+    if "BUY" in signal:
         message = (
-            f"📊 <b>{symbol}</b>\n"
+            f"📈 <b>{symbol}</b>\n"
             f"🤖 <b>{strategy}</b>\n\n"
             f"🟢 <b>BUY NOW</b>\n\n"
-            f"<b>💰 Price:</b> <code>{price}</code>\n"
-            f"<b>🛑 SL:</b> <code>{sl}</code>\n"
-            f"<b>🎯 TP1:</b> <code>{tp1}</code>\n"
-            f"<b>🚀 TP2:</b> <code>{tp2}</code>"
+            f"💰 <b>Price:</b> <code>{price}</code>\n"
+            f"🛑 <b>SL:</b> <code>{sl}</code>\n"
+            f"🎯 <b>TP1:</b> <code>{tp1}</code>\n"
+            f"🚀 <b>TP2:</b> <code>{tp2}</code>"
         )
 
-    elif signal == "SELL":
+    elif "SELL" in signal:
         message = (
-            f"📊 <b>{symbol}</b>\n"
+            f"📉 <b>{symbol}</b>\n"
             f"🤖 <b>{strategy}</b>\n\n"
             f"🔴 <b>SELL NOW</b>\n\n"
-            f"<b>💰 Price:</b> <code>{price}</code>\n"
-            f"<b>🛑 SL:</b> <code>{sl}</code>\n"
-            f"<b>🎯 TP1:</b> <code>{tp1}</code>\n"
-            f"<b>🚀 TP2:</b> <code>{tp2}</code>"
+            f"💰 <b>Price:</b> <code>{price}</code>\n"
+            f"🛑 <b>SL:</b> <code>{sl}</code>\n"
+            f"🎯 <b>TP1:</b> <code>{tp1}</code>\n"
+            f"🚀 <b>TP2:</b> <code>{tp2}</code>"
         )
 
-    elif signal == "TP1 HIT":
+    elif "TP1" in signal:
         message = (
             f"📊 <b>{symbol}</b>\n"
             f"🤖 <b>{strategy}</b>\n\n"
             f"🎯 <b>TP1 HIT</b>\n\n"
-            f"<b>💰 Price:</b> <code>{price}</code>"
+            f"💰 <b>Price:</b> <code>{price}</code>"
         )
 
-    elif signal == "TP2 HIT":
+    elif "TP2" in signal:
         message = (
             f"📊 <b>{symbol}</b>\n"
             f"🤖 <b>{strategy}</b>\n\n"
             f"🚀 <b>TP2 HIT</b>\n\n"
-            f"<b>💰 Price:</b> <code>{price}</code>"
+            f"💰 <b>Price:</b> <code>{price}</code>"
         )
 
-    elif signal == "SL HIT":
+    elif "SL" in signal:
         message = (
             f"📊 <b>{symbol}</b>\n"
             f"🤖 <b>{strategy}</b>\n\n"
             f"❌ <b>STOP LOSS HIT</b>\n\n"
-            f"<b>💰 Price:</b> <code>{price}</code>"
+            f"💰 <b>Price:</b> <code>{price}</code>"
         )
 
     else:
         message = (
             f"📊 <b>{symbol}</b>\n"
             f"🤖 <b>{strategy}</b>\n\n"
-            f"⚪ <b>SIGNAL</b>\n\n"
-            f"<b>💰 Price:</b> <code>{price}</code>"
+            f"⚪ <b>{signal}</b>\n\n"
+            f"💰 <b>Price:</b> <code>{price}</code>"
         )
 
-    # 📤 Send to Telegram
+    print("📤 Sending message:", message)
+
+    # =========================
+    # 📩 SEND TO TELEGRAM
+    # =========================
+
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
     payload = {
