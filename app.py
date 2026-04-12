@@ -4,81 +4,89 @@ import os
 
 app = Flask(__name__)
 
-BOT_TOKEN = "8755949206:AAG_6J4Vx7YfHv-yg_eA1t_AlIOQKX3hsag"
-CHAT_ID = "-1003787596424"
-
+# 🔐 Use environment variables (recommended)
+BOT_TOKEN = os.environ.get("8755949206:AAG_6J4Vx7YfHv-yg_eA1t_AlIOQKX3hsag")
+CHAT_ID = os.environ.get("-1003787596424")
 
 @app.route("/", methods=["POST"])
 def webhook():
     data = request.get_json(silent=True) or {}
     print("🔥 RECEIVED:", data)
 
-    if data:
-        signal = data.get("signal", "")
-        price = data.get("price", "")
-        sl = data.get("sl", "")
-        tp1 = data.get("tp1", "")
-        tp2 = data.get("tp2", "")
-        symbol = data.get("symbol", "XAUUSD")
+    if not data:
+        return "No data", 400
 
+    # 📊 Extract values safely
+    signal = data.get("signal", "")
+    price = data.get("price", "")
+    sl = data.get("sl", "")
+    tp1 = data.get("tp1", "")
+    tp2 = data.get("tp2", "")
+    symbol = data.get("symbol", "XAUUSD")
 
-if signal == "BUY":
-    message = (
-        f"📊 <b>{symbol}</b>\n"
-        f"🟢 <b>BUY NOW</b>\n\n"
-        f"💰 Price: <code>{price}</code>\n"
-        f"🛑 SL: <code>{sl}</code>\n"
-        f"🎯 TP1: <code>{tp1}</code>\n"
-        f"🚀 TP2: <code>{tp2}</code>"
-    )
+    # 🎯 Build message
+    if signal == "BUY":
+        message = (
+            f"📊 <b>{symbol}</b>\n"
+            f"🟢 <b>BUY NOW</b>\n\n"
+            f"<b>💰 Price:</b> <code>{price}</code>\n"
+            f"<b>🛑 SL:</b> <code>{sl}</code>\n"
+            f"<b>🎯 TP1:</b> <code>{tp1}</code>\n"
+            f"<b>🚀 TP2:</b> <code>{tp2}</code>"
+        )
 
-elif signal == "SELL":
-    message = (
-        f"📊 <b>{symbol}</b>\n"
-        f"🔴 <b>SELL NOW</b>\n\n"
-        f"💰 Price: <code>{price}</code>\n"
-        f"🛑 SL: <code>{sl}</code>\n"
-        f"🎯 TP1: <code>{tp1}</code>\n"
-        f"🚀 TP2: <code>{tp2}</code>"
-    )
+    elif signal == "SELL":
+        message = (
+            f"📊 <b>{symbol}</b>\n"
+            f"🔴 <b>SELL NOW</b>\n\n"
+            f"<b>💰 Price:</b> <code>{price}</code>\n"
+            f"<b>🛑 SL:</b> <code>{sl}</code>\n"
+            f"<b>🎯 TP1:</b> <code>{tp1}</code>\n"
+            f"<b>🚀 TP2:</b> <code>{tp2}</code>"
+        )
 
-elif signal == "TP1 HIT":
-    message = (
-        f"📊 <b>{symbol}</b>\n"
-        f"🎯 <b>TP1 HIT</b>\n\n"
-        f"💰 Price: <code>{price}</code>"
-    )
+    elif signal == "TP1 HIT":
+        message = (
+            f"📊 <b>{symbol}</b>\n"
+            f"🎯 <b>TP1 HIT</b>\n\n"
+            f"<b>💰 Price:</b> <code>{price}</code>"
+        )
 
-elif signal == "TP2 HIT":
-    message = (
-        f"📊 <b>{symbol}</b>\n"
-        f"🚀 <b>TP2 HIT</b>\n\n"
-        f"💰 Price: <code>{price}</code>"
-    )
+    elif signal == "TP2 HIT":
+        message = (
+            f"📊 <b>{symbol}</b>\n"
+            f"🚀 <b>TP2 HIT</b>\n\n"
+            f"<b>💰 Price:</b> <code>{price}</code>"
+        )
 
-elif signal == "SL HIT":
-    message = (
-        f"📊 <b>{symbol}</b>\n"
-        f"❌ <b>STOP LOSS HIT</b>\n\n"
-        f"💰 Price: <code>{price}</code>"
-    )
+    elif signal == "SL HIT":
+        message = (
+            f"📊 <b>{symbol}</b>\n"
+            f"❌ <b>STOP LOSS HIT</b>\n\n"
+            f"<b>💰 Price:</b> <code>{price}</code>"
+        )
 
-else:
-    message = (
-        f"📊 <b>{symbol}</b>\n"
-        f"⚪ <b>SIGNAL</b>"
-    )        
+    else:
+        message = (
+            f"📊 <b>{symbol}</b>\n"
+            f"⚪ <b>SIGNAL</b>\n\n"
+            f"<b>💰 Price:</b> <code>{price}</code>"
+        )
 
-        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+    # 📤 Send to Telegram
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
-       payload = {
-    "chat_id": CHAT_ID,
-    "text": message,
-    "parse_mode": "HTML"
-}
+    payload = {
+        "chat_id": CHAT_ID,
+        "text": message,
+        "parse_mode": "HTML"
+    }
 
-        r = requests.post(url, json=payload)
+    try:
+        r = requests.post(url, json=payload, timeout=10)
         print("📩 TELEGRAM RESPONSE:", r.text)
+    except Exception as e:
+        print("❌ ERROR SENDING:", e)
 
     return "OK", 200
 
