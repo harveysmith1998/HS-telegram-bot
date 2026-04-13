@@ -18,7 +18,7 @@ def webhook():
 
     # ✅ Clean + extract values
     signal = str(data.get("signal", "")).strip().upper()
-    price = data.get("price", "")
+    price = data.get("price") or data.get("entry", "")
     sl = data.get("sl", "")
     tp1 = data.get("tp1", "")
     tp2 = data.get("tp2", "")
