@@ -17,15 +17,17 @@ def webhook():
         return "No data", 400
 
     # ✅ Clean + extract values
-    signal   = str(data.get("signal", "")).strip().upper()
-    price    = data.get("price") or data.get("entry", "")
-    sl       = data.get("sl", "")
-    tp1      = data.get("tp1", "")
-    tp2      = data.get("tp2", "")
-    tp3      = data.get("tp3", "")
-    tp4      = data.get("tp4", "")
-    symbol   = data.get("symbol", "XAUUSD")
-    strategy = data.get("strategy", "HS BOT")
+    signal    = str(data.get("signal", "")).strip().upper()
+    price     = data.get("price") or data.get("entry", "")
+    sl        = data.get("sl", "")
+    tp1       = data.get("tp1", "")
+    tp2       = data.get("tp2", "")
+    tp3       = data.get("tp3", "")
+    tp4       = data.get("tp4", "")
+    zone_low  = data.get("zone_low", "")
+    zone_high = data.get("zone_high", "")
+    symbol    = data.get("symbol", "XAUUSD")
+    strategy  = data.get("strategy", "HS BOT")
 
     print("📊 SIGNAL:", signal)
 
@@ -37,14 +39,16 @@ def webhook():
         message = (
             f"📊 <b>{symbol}</b>\n"
             f"🤖 <b>{strategy}</b>\n\n"
-            f"🟢 <b>BUY NOW</b>\n\n"
-            f"💰 <b>Signal Price:</b> <code>{price}</code>\n"
+            f"🔥 <b>BUY NOW</b>\n\n"
+            f"📍 <b>Signal Price:</b> <code>{price}</code>\n"
+            f"📍 <b>Entry Zone:</b> <code>{zone_low} - {zone_high}</code>\n"
             f"🔴 <b>SL:</b> <code>{sl}</code>\n\n"
             f"🎯 TP1: <code>{tp1}</code>\n"
             f"🎯 TP2: <code>{tp2}</code>\n"
             f"🎯 TP3: <code>{tp3}</code>\n"
             f"🚀 TP4: Let it run 🚀\n\n"
-            f"⚠️ <i>Make risk free once in profit and trail stop loss up ⚠️</i>"
+            f"⚠️ <i>Make risk free once in profit and trail stop loss up ⚠️</i>\n\n"
+            f"🔄 <i>Be patient and wait for price to come back to the zone before entering for a better risk/reward</i>"
         )
 
     elif "SELL" in signal and "HIT" not in signal:
@@ -52,13 +56,15 @@ def webhook():
             f"📊 <b>{symbol}</b>\n"
             f"🤖 <b>{strategy}</b>\n\n"
             f"🔴 <b>SELL NOW</b>\n\n"
-            f"💰 <b>Signal Price:</b> <code>{price}</code>\n"
+            f"📍 <b>Signal Price:</b> <code>{price}</code>\n"
+            f"📍 <b>Entry Zone:</b> <code>{zone_low} - {zone_high}</code>\n"
             f"🔴 <b>SL:</b> <code>{sl}</code>\n\n"
             f"🎯 TP1: <code>{tp1}</code>\n"
             f"🎯 TP2: <code>{tp2}</code>\n"
             f"🎯 TP3: <code>{tp3}</code>\n"
             f"🚀 TP4: Let it run 🚀\n\n"
-            f"⚠️ <i>Make risk free once in profit and trail stop loss up ⚠️</i>"
+            f"⚠️ <i>Make risk free once in profit and trail stop loss up ⚠️</i>\n\n"
+            f"🔄 <i>Be patient and wait for price to come back to the zone before entering for a better risk/reward</i>"
         )
 
     elif "TP1 HIT" in signal:
@@ -135,4 +141,3 @@ def webhook():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
