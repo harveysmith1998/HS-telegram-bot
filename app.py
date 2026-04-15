@@ -4,19 +4,19 @@ import os
 
 app = Flask(__name__)
 
-# ✅ Correct way to get env variables
+# Correct way to get env variables
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
 
 @app.route("/", methods=["POST"])
 def webhook():
     data = request.get_json(silent=True) or {}
-    print("📦 RECEIVED:", data)
+    print("RECEIVED:", data)
 
     if not data:
         return "No data", 400
 
-    # ✅ Clean + extract values
+    # Clean + extract values
     signal    = str(data.get("signal", "")).strip().upper()
     price     = data.get("price") or data.get("entry", "")
     sl        = data.get("sl", "")
@@ -29,10 +29,10 @@ def webhook():
     symbol    = data.get("symbol", "XAUUSD")
     strategy  = data.get("strategy", "HS BOT")
 
-    print("📊 SIGNAL:", signal)
+    print("SIGNAL:", signal)
 
     # ==========================
-    # 🧠 BUILD MESSAGE
+    # BUILD MESSAGE
     # ==========================
 
     if "BUY" in signal and "HIT" not in signal:
@@ -115,10 +115,10 @@ def webhook():
             f"💰 <b>Price:</b> <code>{price}</code>"
         )
 
-    print("📤 Sending message:", message)
+    print("Sending message:", message)
 
     # ==========================
-    # 📨 SEND TO TELEGRAM
+    # SEND TO TELEGRAM
     # ==========================
 
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
@@ -131,9 +131,9 @@ def webhook():
 
     try:
         r = requests.post(url, json=payload, timeout=10)
-        print("📬 TELEGRAM RESPONSE:", r.text)
+        print("TELEGRAM RESPONSE:", r.text)
     except Exception as e:
-        print("❌ ERROR SENDING:", e)
+        print("ERROR SENDING:", e)
 
     return "OK", 200
 
