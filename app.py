@@ -9,27 +9,21 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN")
 CHAT_ID   = os.environ.get("CHAT_ID")
 
 # ===== TRADE STATE STORAGE =====
-# Stores per symbol+strategy:
-# {
-#   "XAUUSD_HS BOT": {
-#       "message_id": 12345,
-#       "entry": 4800.00,
-#       "side": "BUY",
-#       "be_advisory_sent": False
-#   }
-# }
 trades = {}
 
 # ===== PIP CALCULATION =====
-# $1 move = 10 pips for all instruments
-PIPS_PER_DOLLAR = 10
+# $1 move = 10 pips
+PIPS_PER_DOLLAR  = 10
 BE_ADVISORY_PIPS = 70
+REDUCE_RISK_PIPS = 100
 
 def calc_pips(entry, current_price, side):
+    if not entry or not current_price:
+        return 0
     if side == "BUY":
-        return round((current_price - entry) * PIPS_PER_DOLLAR)
+        return round((float(current_price) - float(entry)) * PIPS_PER_DOLLAR)
     else:
-        return round((entry - current_price) * PIPS_PER_DOLLAR)
+        return round((float(entry) - float(current_price)) * PIPS_PER_DOLLAR)
 
 # ===== SEND TELEGRAM =====
 def send_telegram(message, reply_to_id=None):
@@ -85,6 +79,8 @@ def webhook():
     trade_key = f"{symbol}_{strategy}"
     trade     = trades.get(trade_key, {})
     reply_id  = trade.get("message_id")
+    entry     = trade.get("entry", 0)
+    side      = trade.get("side", "BUY")
 
     # ==========================
     # BUY SIGNAL
@@ -112,7 +108,8 @@ def webhook():
                 "message_id": msg_id,
                 "entry": float(price) if price else 0,
                 "side": "BUY",
-                "be_advisory_sent": False
+                "be_advisory_sent": False,
+                "reduce_risk_sent": False
             }
         return "OK", 200
 
@@ -142,27 +139,30 @@ def webhook():
                 "message_id": msg_id,
                 "entry": float(price) if price else 0,
                 "side": "SELL",
-                "be_advisory_sent": False
+                "be_advisory_sent": False,
+                "reduce_risk_sent": False
             }
         return "OK", 200
 
     # ==========================
-    # TP1 HIT
+    # TP HIT HELPER
     # ==========================
-    elif "TP1 HIT" in signal:
+    def handle_tp(tp_label, pip_emoji, close_trade=False):
         current_price = float(price) if price else 0
-        pips = calc_pips(trade.get("entry", current_price), current_price, trade.get("side", "BUY"))
+        pips = calc_pips(entry, current_price, side)
+
+        pip_text = f"📈 <b>Pips:</b> <code>+{pips}</code>" if pips > 0 else f"📉 <b>Pips:</b> <code>{pips}</code>"
 
         message = (
             f"📊 <b>{symbol}</b>\n"
             f"🤖 <b>{strategy}</b>\n\n"
-            f"🎯 <b>TP1 HIT</b>\n\n"
+            f"{pip_emoji} <b>{tp_label}</b>\n\n"
             f"💰 <b>Price:</b> <code>{price}</code>\n"
-            f"📈 <b>Pips:</b> <code>+{pips}</code>"
+            f"{pip_text}"
         )
         send_telegram(message, reply_to_id=reply_id)
 
-        # BE advisory
+        # BE advisory after 70 pips
         if pips >= BE_ADVISORY_PIPS and not trade.get("be_advisory_sent"):
             be_message = (
                 f"📊 <b>{symbol}</b>\n"
@@ -174,56 +174,36 @@ def webhook():
             if trade_key in trades:
                 trades[trade_key]["be_advisory_sent"] = True
 
+        # Reduce risk advisory after 100 pips
+        if pips >= REDUCE_RISK_PIPS and not trade.get("reduce_risk_sent"):
+            reduce_message = (
+                f"📊 <b>{symbol}</b>\n"
+                f"🤖 <b>{strategy}</b>\n\n"
+                f"💡 <b>LOOK TO START REDUCING RISK</b>\n\n"
+                f"<i>Trade is up {pips} pips — consider closing partial position and trailing your Stop Loss</i>"
+            )
+            send_telegram(reduce_message, reply_to_id=reply_id)
+            if trade_key in trades:
+                trades[trade_key]["reduce_risk_sent"] = True
+
+        if close_trade:
+            trades.pop(trade_key, None)
+
     # ==========================
-    # TP2 HIT
+    # TP HITS
     # ==========================
+    if "TP1 HIT" in signal:
+        handle_tp("TP1 HIT", "🎯")
+
     elif "TP2 HIT" in signal:
-        current_price = float(price) if price else 0
-        pips = calc_pips(trade.get("entry", current_price), current_price, trade.get("side", "BUY"))
+        handle_tp("TP2 HIT", "🚀")
 
-        message = (
-            f"📊 <b>{symbol}</b>\n"
-            f"🤖 <b>{strategy}</b>\n\n"
-            f"🚀 <b>TP2 HIT</b>\n\n"
-            f"💰 <b>Price:</b> <code>{price}</code>\n"
-            f"📈 <b>Pips:</b> <code>+{pips}</code>"
-        )
-        send_telegram(message, reply_to_id=reply_id)
-
-        if pips >= BE_ADVISORY_PIPS and not trade.get("be_advisory_sent"):
-            be_message = (
-                f"📊 <b>{symbol}</b>\n"
-                f"🤖 <b>{strategy}</b>\n\n"
-                f"⚠️ <b>MOVE SL TO BREAKEVEN NOW!</b> ⚠️\n\n"
-                f"<i>Trade is up {pips} pips — protect your position by moving your Stop Loss to entry price</i>"
-            )
-            send_telegram(be_message, reply_to_id=reply_id)
-            if trade_key in trades:
-                trades[trade_key]["be_advisory_sent"] = True
-
-    # ==========================
-    # TP3 HIT
-    # ==========================
     elif "TP3 HIT" in signal:
-        current_price = float(price) if price else 0
-        pips = calc_pips(trade.get("entry", current_price), current_price, trade.get("side", "BUY"))
+        handle_tp("TP3 HIT", "🚀")
 
-        message = (
-            f"📊 <b>{symbol}</b>\n"
-            f"🤖 <b>{strategy}</b>\n\n"
-            f"🚀 <b>TP3 HIT</b>\n\n"
-            f"💰 <b>Price:</b> <code>{price}</code>\n"
-            f"📈 <b>Pips:</b> <code>+{pips}</code>"
-        )
-        send_telegram(message, reply_to_id=reply_id)
-
-    # ==========================
-    # TP4 HIT
-    # ==========================
     elif "TP4 HIT" in signal:
         current_price = float(price) if price else 0
-        pips = calc_pips(trade.get("entry", current_price), current_price, trade.get("side", "BUY"))
-
+        pips = calc_pips(entry, current_price, side)
         message = (
             f"📊 <b>{symbol}</b>\n"
             f"🤖 <b>{strategy}</b>\n\n"
@@ -232,20 +212,15 @@ def webhook():
             f"📈 <b>Total Pips:</b> <code>+{pips}</code>"
         )
         send_telegram(message, reply_to_id=reply_id)
-        trades.pop(trade_key, None)
-        return "OK", 200
+        # Don't clear trade yet — TP5 may still hit
 
-    # ==========================
-    # TP5 HIT
-    # ==========================
     elif "TP5 HIT" in signal:
         current_price = float(price) if price else 0
-        pips = calc_pips(trade.get("entry", current_price), current_price, trade.get("side", "BUY"))
-
+        pips = calc_pips(entry, current_price, side)
         message = (
             f"📊 <b>{symbol}</b>\n"
             f"🤖 <b>{strategy}</b>\n\n"
-            f"💎🚀 <b>TP5 HIT - DIAMOND HANDS PAID OFF!</b> 💎🚀\n\n"
+            f"🤑🤑 <b>TP5 HIT - PRINTING MONEY!</b> 🤑🤑\n\n"
             f"💰 <b>Price:</b> <code>{price}</code>\n"
             f"📈 <b>Total Pips:</b> <code>+{pips}</code>"
         )
@@ -258,9 +233,7 @@ def webhook():
     # ==========================
     elif "SL HIT" in signal:
         current_price = float(price) if price else 0
-        entry = trade.get("entry", current_price)
-        side  = trade.get("side", "BUY")
-        pips  = calc_pips(entry, current_price, side)
+        pips = calc_pips(entry, current_price, side)
 
         if pips > 0:
             pip_text = (
